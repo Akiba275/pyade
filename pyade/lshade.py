@@ -19,7 +19,7 @@ def get_default_params(dim: int):
 
 
 def apply(population_size: int, individual_size: int, bounds: np.ndarray,
-          func: Callable[[np.ndarray], np.float], opts: Any,
+          func: Callable[[np.ndarray], float], opts: Any,
           memory_size: int, callback: Callable[[Dict], Any],
           max_evals: int, seed: Union[int, None]) -> [np.ndarray, int]:
     """
@@ -66,7 +66,7 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
     # Modify type checking code to adapt Numpy's SeedSequence.
     if not isinstance(seed, (int, np.uint32, np.uint64)) and seed is not None:
         raise ValueError("seed must be an integer or None.")
-
+    seed = int(seed)
     np.random.seed(seed)
     random.seed(seed)
 
