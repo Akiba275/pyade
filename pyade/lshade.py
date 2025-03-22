@@ -63,8 +63,8 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
         raise ValueError("bounds must be a NumPy ndarray.\n"
                          "The array must be of individual_size length. "
                          "Each row must have 2 elements.")
-
-    if type(seed) is not int and seed is not None:
+    # Modify type checking code to adapt Numpy's SeedSequence.
+    if not isinstance(seed, (int, np.uint32, np.uint64)) and seed is not None:
         raise ValueError("seed must be an integer or None.")
 
     np.random.seed(seed)
@@ -82,10 +82,6 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
     all_indexes = list(range(memory_size))
     current_generation = 0
     num_evals = population_size
-    # Calculate max_iters
-    n = population_size
-    i = 0
-    max_iters = 0
 
     # Calculate max_iters
     n = population_size
