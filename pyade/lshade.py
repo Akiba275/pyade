@@ -66,7 +66,7 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
     # Modify type checking code to adapt Numpy's SeedSequence.
     if not isinstance(seed, (int, np.uint32, np.uint64)) and seed is not None:
         raise ValueError("seed must be an integer or None.")
-    seed = int(seed)
+    seed = int(seed) if seed is not None else None
     np.random.seed(seed)
     random.seed(seed)
 
