@@ -24,7 +24,7 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
           max_evals_after_converge: Union[int, None],
           callback: Callable[[Dict], Any],
           max_evals: int, seed: Union[int, None],
-          return_history: bool = False) -> [np.ndarray, float]|[np.ndarray, float, list]:
+          return_history: bool = False) -> Union[tuple(np.ndarray, float), tuple(np.ndarray, float, list)]:
     """
     Applies the L-SHADE Differential Evolution Algorithm.
     :param population_size: Size of the population.
