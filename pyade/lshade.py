@@ -15,7 +15,7 @@ def get_default_params(dim: int):
         :rtype dict
     """
     return {'max_evals': 10000 * dim, 'population_size': 18 * dim, 'individual_size': dim,
-            'memory_size': 6, 'precision': 1e-6, 'max_evals_after_converge':2 * dim, 'callback': None, 'seed': None, 'opts': None}
+            'memory_size': 6, 'precision': 1e-6, 'max_evals_after_converge':2 * dim, 'callback': None, 'seed': None, 'opts': None, 'return_history': False}
 
 
 def apply(population_size: int, individual_size: int, bounds: np.ndarray,
