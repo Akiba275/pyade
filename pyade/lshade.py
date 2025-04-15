@@ -15,13 +15,16 @@ def get_default_params(dim: int):
         :rtype dict
     """
     return {'max_evals': 10000 * dim, 'population_size': 18 * dim, 'individual_size': dim,
-            'memory_size': 6, 'callback': None, 'seed': None, 'opts': None}
+            'memory_size': 6, 'precision': 1e-6, 'max_evals_after_converge':2 * dim, 'callback': None, 'seed': None, 'opts': None}
 
 
 def apply(population_size: int, individual_size: int, bounds: np.ndarray,
           func: Callable[[np.ndarray], float], opts: Any,
-          memory_size: int, callback: Callable[[Dict], Any],
-          max_evals: int, seed: Union[int, None]) -> [np.ndarray, int]:
+          memory_size: int, precision: Union[float, None],
+          max_evals_after_converge: Union[int, None],
+          callback: Callable[[Dict], Any],
+          max_evals: int, seed: Union[int, None],
+          return_history: bool = False) -> [np.ndarray, float]|[np.ndarray, float, list]:
     """
     Applies the L-SHADE Differential Evolution Algorithm.
     :param population_size: Size of the population.
@@ -37,6 +40,10 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
     :type func: Callable[[np.ndarray], float]
     :param opts: Optional parameters for the fitness function.
     :type opts: Any type.
+    :param precision: Convergence is considered when the fitness difference is less than this value, and if it is None, the algorithm iterates to the maximum number of evaluations.
+    :type precision: Union[float, None]
+    :param max_evals_after_converge: Number of remaining iterations after convergence of the algorithm.
+    :type max_evals_after_converge: Union[int, None]
     :param memory_size: Size of the internal memory.
     :type memory_size: int
     :param callback: Optional function that allows read access to the state of all variables once each generation.
@@ -59,6 +66,9 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
     if type(max_evals) is not int or max_evals <= 0:
         raise ValueError("max_iter must be a positive integer.")
 
+    if type(max_evals_after_converge) is not None and max_evals_after_converge <= 0:
+        raise ValueError("max_evals_after_converge must be None or a positive integer.")
+              
     if type(bounds) is not np.ndarray or bounds.shape != (individual_size, 2):
         raise ValueError("bounds must be a NumPy ndarray.\n"
                          "The array must be of individual_size length. "
@@ -92,7 +102,14 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
         n = round((4 - init_size) / max_evals * i + init_size)
         i += n
 
-    while num_evals < max_evals:
+    fitness_history = []
+    best_fitness = np.min(fitness)
+    if isinstance(max_evals_after_converge, int) and max_evals_after_converge > 0:
+        converge_countdown = max_evals_after_converge
+    else:
+        max_evals_after_converge = get_default_params(individual_size)["max_evals_after_converge"]
+        converge_countdown = max_evals_after_converge
+    while num_evals < max_evals and converge_countdown > 0:
         # 2.1 Adaptation
         r = np.random.choice(all_indexes, population_size)
         cr = np.random.normal(m_cr[r], 0.1, population_size)
@@ -145,7 +162,16 @@ def apply(population_size: int, individual_size: int, bounds: np.ndarray,
 
         if callback is not None:
             callback(**(locals()))
+
+        if isinstance(precision, float) and np.abs(np.min(fitness)-best_fitness) < precision:
+            converge_countdown -= 1
+        if np.min(fitness) < best_fitness:
+            best_fitness = np.min(fitness)
+        fitness_history.append(np.min(fitness))
         current_generation += 1
 
     best = np.argmin(fitness)
-    return population[best], fitness[best]
+    if return_history:
+        return population[best], fitness[best], fitness_history
+    else:
+        return population[best], fitness[best]
